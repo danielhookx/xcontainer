@@ -2,7 +2,8 @@ package types
 
 import (
 	"testing"
-	"xcontainer/set"
+
+	"github.com/danielhookx/xcontainer/set"
 
 	"github.com/stretchr/testify/assert"
 )

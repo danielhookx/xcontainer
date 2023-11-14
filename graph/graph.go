@@ -1,10 +1,10 @@
 package types
 
 import (
-	"xcontainer"
-	"xcontainer/list"
-	"xcontainer/queue"
-	"xcontainer/stack"
+	"github.com/danielhookx/xcontainer"
+	"github.com/danielhookx/xcontainer/list"
+	"github.com/danielhookx/xcontainer/queue"
+	"github.com/danielhookx/xcontainer/stack"
 )
 
 // UndirectedGraph stored by adjacency list

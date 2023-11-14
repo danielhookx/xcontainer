@@ -3,8 +3,9 @@ package tree
 import (
 	"errors"
 	"strconv"
-	"xcontainer"
-	xqueue "xcontainer/queue"
+
+	"github.com/danielhookx/xcontainer"
+	xqueue "github.com/danielhookx/xcontainer/queue"
 )
 
 type TreeNodeI[T any] interface {

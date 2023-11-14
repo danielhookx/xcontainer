@@ -1,6 +1,6 @@
 package heap
 
-import "xcontainer"
+import "github.com/danielhookx/xcontainer"
 
 type MaxHeap[T xcontainer.Orderliness] struct {
 	nodes    []T

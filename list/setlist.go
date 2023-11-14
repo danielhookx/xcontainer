@@ -1,6 +1,6 @@
 package list
 
-import "xcontainer/set"
+import "github.com/danielhookx/xcontainer/set"
 
 // SingleListSet 节点值不重复的单链表封装
 type SingleListSet[T comparable] struct {

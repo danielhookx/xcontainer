@@ -1,6 +1,6 @@
 package tree
 
-import "xcontainer"
+import "github.com/danielhookx/xcontainer"
 
 type SearchTree[T xcontainer.Orderliness] struct {
 	root *TreeNode[T]

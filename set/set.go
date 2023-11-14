@@ -3,7 +3,8 @@ package set
 import (
 	"errors"
 	"sync/atomic"
-	"xcontainer"
+
+	"github.com/danielhookx/xcontainer"
 )
 
 // https://en.wikipedia.org/wiki/Set_(abstract_data_type)#Operations

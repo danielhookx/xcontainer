@@ -1,4 +1,4 @@
-module xcontainer
+module github.com/danielhookx/xcontainer
 
 go 1.20
 
