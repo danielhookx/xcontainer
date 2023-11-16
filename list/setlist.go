@@ -1,42 +1,37 @@
 package list
 
-import "github.com/danielhookx/xcontainer/set"
+import (
+	"github.com/danielhookx/xcontainer"
+	"github.com/danielhookx/xcontainer/set"
+)
 
-// SingleListSet 节点值不重复的单链表封装
-type SingleListSet[T comparable] struct {
-	len        int
-	head, tail *SingleListNode[T]
-	set        *set.Set[T]
+// SetList 节点值不重复的单链表封装
+type SetList[T comparable] struct {
+	l *List[T]
+	s *set.Set[T]
 }
 
-func NewSingleListSet[T comparable]() *SingleListSet[T] {
-	l := &SingleListSet[T]{
-		len:  0,
-		head: &SingleListNode[T]{Val: *new(T), Next: nil},
-		tail: nil,
-		set:  set.CreateSet[T](),
+func NewSetList[T comparable]() *SetList[T] {
+	sl := &SetList[T]{
+		l: New[T](),
+		s: set.CreateSet[T](),
 	}
-	l.tail = l.head
-	return l
+	return sl
 }
 
-func (l *SingleListSet[T]) Add(val T) {
-	if l.set.IsElementOf(val) {
+func (sl *SetList[T]) Add(val T) {
+	if sl.s.IsElementOf(val) {
 		return
 	}
-	l.tail.Next = &SingleListNode[T]{
-		Val:  val,
-		Next: nil,
-	}
-	l.tail = l.tail.Next
-	l.set.Add(val)
-	l.len++
+	sl.l.PushFront(val)
+	sl.s.Add(val)
 }
 
-func (l *SingleListSet[T]) Head() *SingleListNode[T] {
-	return l.head.Next
-}
+// Len returns the number of elements of list l.
+// The complexity is O(1).
+func (sl *SetList[T]) Len() int { return sl.l.len }
 
-func (l *SingleListSet[T]) Tail() *SingleListNode[T] {
-	return l.tail
+// returns a function that returns one more value of S at each call, in some arbitrary order.
+func (sl *SetList[T]) Iterate() (xcontainer.IterateHandler[T], xcontainer.CancelHandler) {
+	return sl.l.Iterate()
 }
