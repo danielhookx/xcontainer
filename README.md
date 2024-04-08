@@ -20,6 +20,7 @@ go get github.com/danielhookx/xcontainer
 - graph
 - heap
 - list
+- ordered map
 - queue
 - set
 - stack
