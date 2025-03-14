@@ -1,6 +1,8 @@
 package xmap
 
 import (
+	"iter"
+
 	"github.com/danielhookx/xcontainer/list"
 )
 
@@ -71,4 +73,21 @@ func (m *OrderedMap[K, V]) ToArray() []V {
 		array = append(array, e.Value.V)
 	}
 	return array
+}
+
+func (m *OrderedMap[K, V]) Iter() iter.Seq2[K, V] {
+	// 在迭代开始时创建一个快照
+	snapshot := make([]*MapNode[K, V], 0, m.Len())
+	for e := m.l.Front(); e != nil; e = e.Next() {
+		snapshot = append(snapshot, e.Value)
+	}
+
+	return func(yield func(K, V) bool) {
+		// 使用快照进行迭代
+		for _, node := range snapshot {
+			if !yield(node.K, node.V) {
+				return
+			}
+		}
+	}
 }
