@@ -5,6 +5,7 @@
 package xmap
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 	"testing"
@@ -1272,4 +1273,485 @@ func benchmarkOrderedMap_Iter(multiplier int) func(b *testing.B) {
 			}
 		}
 	}
+}
+
+func TestUnmarshalText(t *testing.T) {
+	t.Run("Basic Operations", func(t *testing.T) {
+		jsonText := `{"key1": "value1", "key2": 123, "key3": true}`
+		want := func() *OrderedMap[string, any] {
+			m := NewOrderedMap[string, any]()
+			m.Set("key1", "value1")
+			m.Set("key2", float64(123))
+			m.Set("key3", true)
+			return m
+		}()
+
+		om := NewOrderedMap[string, any]()
+		err := json.Unmarshal([]byte(jsonText), om)
+
+		assert.NoError(t, err)
+		assert.Equal(t, want.Len(), om.Len())
+
+		// Verify all key-value pairs
+		for key, value := range want.Iter() {
+			gotValue, exists := om.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Empty Map", func(t *testing.T) {
+		jsonText := `{}`
+		want := NewOrderedMap[string, any]()
+
+		om := NewOrderedMap[string, any]()
+		err := json.Unmarshal([]byte(jsonText), om)
+
+		assert.NoError(t, err)
+		assert.Equal(t, want.Len(), om.Len())
+	})
+
+	t.Run("Special Values", func(t *testing.T) {
+		jsonText := `{"empty": "", "null": null, "zero": 0}`
+		want := func() *OrderedMap[string, any] {
+			m := NewOrderedMap[string, any]()
+			m.Set("empty", "")
+			m.Set("null", nil)
+			m.Set("zero", float64(0))
+			return m
+		}()
+
+		om := NewOrderedMap[string, any]()
+		err := json.Unmarshal([]byte(jsonText), om)
+
+		assert.NoError(t, err)
+		assert.Equal(t, want.Len(), om.Len())
+
+		// Verify all key-value pairs
+		for key, value := range want.Iter() {
+			gotValue, exists := om.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Complex Types", func(t *testing.T) {
+		jsonText := `{"struct": {"name": "test", "age": 30}, "array": [1, 2, 3], "map": {"key": "value"}}`
+		want := func() *OrderedMap[string, any] {
+			m := NewOrderedMap[string, any]()
+			m.Set("struct", map[string]any{
+				"name": "test",
+				"age":  float64(30),
+			})
+			m.Set("array", []any{float64(1), float64(2), float64(3)})
+			m.Set("map", map[string]any{
+				"key": "value",
+			})
+			return m
+		}()
+
+		om := NewOrderedMap[string, any]()
+		err := json.Unmarshal([]byte(jsonText), om)
+
+		assert.NoError(t, err)
+		assert.Equal(t, want.Len(), om.Len())
+
+		// Verify all key-value pairs
+		for key, value := range want.Iter() {
+			gotValue, exists := om.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Edge Cases", func(t *testing.T) {
+		jsonText := `{"max_int": 9223372036854775807, "min_int": -9223372036854775808, "special_chars": "!@#$%^&*()"}`
+		want := func() *OrderedMap[string, any] {
+			m := NewOrderedMap[string, any]()
+			m.Set("max_int", float64(9223372036854775807))
+			m.Set("min_int", float64(-9223372036854775808))
+			m.Set("special_chars", "!@#$%^&*()")
+			return m
+		}()
+
+		om := NewOrderedMap[string, any]()
+		err := json.Unmarshal([]byte(jsonText), om)
+
+		assert.NoError(t, err)
+		assert.Equal(t, want.Len(), om.Len())
+
+		// Verify all key-value pairs
+		for key, value := range want.Iter() {
+			gotValue, exists := om.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Invalid JSON", func(t *testing.T) {
+		jsonText := `{invalid json}`
+		om := NewOrderedMap[string, any]()
+		err := json.Unmarshal([]byte(jsonText), om)
+
+		assert.Error(t, err)
+	})
+
+	t.Run("Nested Structures", func(t *testing.T) {
+		jsonText := `{"nested": {"array": [{"id": 1}, {"id": 2}], "map": {"key1": {"value": 1}, "key2": {"value": 2}}}}`
+		want := func() *OrderedMap[string, any] {
+			m := NewOrderedMap[string, any]()
+			m.Set("nested", map[string]any{
+				"array": []any{
+					map[string]any{"id": float64(1)},
+					map[string]any{"id": float64(2)},
+				},
+				"map": map[string]any{
+					"key1": map[string]any{"value": float64(1)},
+					"key2": map[string]any{"value": float64(2)},
+				},
+			})
+			return m
+		}()
+
+		om := NewOrderedMap[string, any]()
+		err := json.Unmarshal([]byte(jsonText), om)
+
+		assert.NoError(t, err)
+		assert.Equal(t, want.Len(), om.Len())
+
+		// Verify all key-value pairs
+		for key, value := range want.Iter() {
+			gotValue, exists := om.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Order Preservation", func(t *testing.T) {
+		// Use an ordered JSON string with a defined key order
+		jsonText := `{"z": 1, "y": 2, "x": 3, "w": 4, "v": 5, "u": 6, "t": 7, "s": 8, "r": 9, "q": 10}`
+
+		// Deserialize to OrderedMap
+		om := NewOrderedMap[string, any]()
+		err := json.Unmarshal([]byte(jsonText), om)
+		assert.NoError(t, err)
+
+		// Verify that the key order matches the order in the JSON
+		expectedKeys := []string{"z", "y", "x", "w", "v", "u", "t", "s", "r", "q"}
+
+		// Collect the actual key order
+		actualKeys := make([]string, 0, om.Len())
+		for key, _ := range om.Iter() {
+			actualKeys = append(actualKeys, key)
+		}
+
+		// Verify the order is consistent
+		assert.Equal(t, expectedKeys, actualKeys, "Key order should match the order in the JSON")
+
+		// Serialize again
+		data, err := json.Marshal(om)
+		assert.NoError(t, err)
+
+		// Deserialize again
+		om2 := NewOrderedMap[string, any]()
+		err = json.Unmarshal(data, om2)
+		assert.NoError(t, err)
+
+		// Collect the key order after re-deserialization
+		actualKeys2 := make([]string, 0, om2.Len())
+		for key, _ := range om2.Iter() {
+			actualKeys2 = append(actualKeys2, key)
+		}
+
+		// Verify that the order is preserved after serialization and deserialization
+		assert.Equal(t, actualKeys, actualKeys2, "Key order should be preserved after serialization and deserialization")
+	})
+}
+
+func TestMarshalJSON(t *testing.T) {
+	t.Run("Basic Operations", func(t *testing.T) {
+		m := NewOrderedMap[string, any]()
+		m.Set("key1", "value1")
+		m.Set("key2", float64(123))
+		m.Set("key3", true)
+
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		expected := `{"key1":"value1","key2":123,"key3":true}`
+		assert.Equal(t, expected, string(data))
+
+		// Deserialize back to verify
+		m2 := NewOrderedMap[string, any]()
+		err = json.Unmarshal(data, m2)
+		assert.NoError(t, err)
+		assert.Equal(t, m.Len(), m2.Len())
+
+		// Verify all key-value pairs
+		for key, value := range m.Iter() {
+			gotValue, exists := m2.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Empty Map", func(t *testing.T) {
+		m := NewOrderedMap[string, any]()
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+		assert.Equal(t, "{}", string(data))
+	})
+
+	t.Run("Special Values", func(t *testing.T) {
+		m := NewOrderedMap[string, any]()
+		m.Set("empty", "")
+		m.Set("null", nil)
+		m.Set("zero", float64(0))
+
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		expected := `{"empty":"","null":null,"zero":0}`
+		assert.Equal(t, expected, string(data))
+	})
+
+	t.Run("Complex Types", func(t *testing.T) {
+		m := NewOrderedMap[string, any]()
+		m.Set("struct", map[string]any{
+			"name": "test",
+			"age":  float64(30),
+		})
+		m.Set("array", []any{float64(1), float64(2), float64(3)})
+		m.Set("map", map[string]any{
+			"key": "value",
+		})
+
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		// Deserialize back to verify
+		m2 := NewOrderedMap[string, any]()
+		err = json.Unmarshal(data, m2)
+		assert.NoError(t, err)
+		assert.Equal(t, m.Len(), m2.Len())
+
+		// Verify all key-value pairs
+		for key, value := range m.Iter() {
+			gotValue, exists := m2.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Edge Cases", func(t *testing.T) {
+		m := NewOrderedMap[string, any]()
+		m.Set("max_int", float64(9223372036854775807))
+		m.Set("min_int", float64(-9223372036854775808))
+		m.Set("special_chars", "!@#$%^&*()")
+
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		// Deserialize back to verify
+		m2 := NewOrderedMap[string, any]()
+		err = json.Unmarshal(data, m2)
+		assert.NoError(t, err)
+		assert.Equal(t, m.Len(), m2.Len())
+
+		// Verify all key-value pairs
+		for key, value := range m.Iter() {
+			gotValue, exists := m2.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Key-Value Order Preservation", func(t *testing.T) {
+		// Create an ordered map with a defined key order
+		m := NewOrderedMap[string, any]()
+		keys := []string{"z", "y", "x", "w", "v", "u", "t", "s", "r", "q"}
+		for i, key := range keys {
+			m.Set(key, i+1)
+		}
+
+		// Serialize
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		// Verify that the serialized JSON string preserves the key order
+		expectedJSON := `{"z":1,"y":2,"x":3,"w":4,"v":5,"u":6,"t":7,"s":8,"r":9,"q":10}`
+		assert.Equal(t, expectedJSON, string(data))
+
+		// Deserialize back
+		m2 := NewOrderedMap[string, any]()
+		err = json.Unmarshal(data, m2)
+		assert.NoError(t, err)
+
+		// Collect the key order after deserialization
+		actualKeys := make([]string, 0, m2.Len())
+		for key, _ := range m2.Iter() {
+			actualKeys = append(actualKeys, key)
+		}
+
+		// Verify the order is consistent
+		assert.Equal(t, keys, actualKeys, "Key order should be preserved after serialization and deserialization")
+	})
+
+	t.Run("Nested Structures", func(t *testing.T) {
+		m := NewOrderedMap[string, any]()
+		m.Set("nested", map[string]any{
+			"array": []any{
+				map[string]any{"id": float64(1)},
+				map[string]any{"id": float64(2)},
+			},
+			"map": map[string]any{
+				"key1": map[string]any{"value": float64(1)},
+				"key2": map[string]any{"value": float64(2)},
+			},
+		})
+
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		// Deserialize back to verify
+		m2 := NewOrderedMap[string, any]()
+		err = json.Unmarshal(data, m2)
+		assert.NoError(t, err)
+		assert.Equal(t, m.Len(), m2.Len())
+
+		// Verify nested structure
+		nestedValue, exists := m2.Get("nested")
+		assert.True(t, exists)
+		assert.IsType(t, map[string]any{}, nestedValue)
+
+		nestedMap := nestedValue.(map[string]any)
+		assert.Contains(t, nestedMap, "array")
+		assert.Contains(t, nestedMap, "map")
+	})
+
+	t.Run("Non-String Key Types", func(t *testing.T) {
+		m := NewOrderedMap[int, string]()
+		m.Set(1, "one")
+		m.Set(2, "two")
+
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+		assert.Contains(t, string(data), `"1":"one"`)
+		assert.Contains(t, string(data), `"2":"two"`)
+	})
+}
+
+func TestNonStringKeyMarshalJSON(t *testing.T) {
+	t.Run("Integer Keys", func(t *testing.T) {
+		m := NewOrderedMap[int, string]()
+		m.Set(1, "one")
+		m.Set(2, "two")
+		m.Set(3, "three")
+
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		expected := `{"1":"one","2":"two","3":"three"}`
+		assert.Equal(t, expected, string(data))
+
+		// Deserialize back to verify
+		m2 := NewOrderedMap[int, string]()
+		err = json.Unmarshal(data, m2)
+		assert.NoError(t, err)
+		assert.Equal(t, m.Len(), m2.Len())
+
+		// Verify all key-value pairs
+		for key, value := range m.Iter() {
+			gotValue, exists := m2.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Float Keys", func(t *testing.T) {
+		m := NewOrderedMap[float64, string]()
+		m.Set(1.1, "one point one")
+		m.Set(2.2, "two point two")
+		m.Set(3.3, "three point three")
+
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		// Deserialize back to verify
+		m2 := NewOrderedMap[float64, string]()
+		err = json.Unmarshal(data, m2)
+		assert.NoError(t, err)
+		assert.Equal(t, m.Len(), m2.Len())
+
+		// Verify all key-value pairs
+		for key, value := range m.Iter() {
+			gotValue, exists := m2.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Boolean Keys", func(t *testing.T) {
+		m := NewOrderedMap[bool, string]()
+		m.Set(true, "true value")
+		m.Set(false, "false value")
+
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		// Deserialize back to verify
+		m2 := NewOrderedMap[bool, string]()
+		err = json.Unmarshal(data, m2)
+		assert.NoError(t, err)
+		assert.Equal(t, m.Len(), m2.Len())
+
+		// Verify all key-value pairs
+		for key, value := range m.Iter() {
+			gotValue, exists := m2.Get(key)
+			assert.True(t, exists)
+			assert.Equal(t, value, gotValue)
+		}
+	})
+
+	t.Run("Composite Key Types", func(t *testing.T) {
+		type Point struct {
+			X, Y int
+		}
+		m := NewOrderedMap[Point, string]()
+		m.Set(Point{1, 2}, "point 1,2")
+		m.Set(Point{3, 4}, "point 3,4")
+
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		// Since composite key type conversion may not be perfect, we only verify serialization success
+		assert.Contains(t, string(data), "point 1,2")
+		assert.Contains(t, string(data), "point 3,4")
+	})
+
+	t.Run("Key-Value Order Preservation", func(t *testing.T) {
+		m := NewOrderedMap[int, string]()
+		keys := []int{10, 9, 8, 7, 6, 5, 4, 3, 2, 1}
+		for _, key := range keys {
+			m.Set(key, fmt.Sprintf("value%d", key))
+		}
+
+		// Serialize
+		data, err := json.Marshal(m)
+		assert.NoError(t, err)
+
+		// Deserialize back
+		m2 := NewOrderedMap[int, string]()
+		err = json.Unmarshal(data, m2)
+		assert.NoError(t, err)
+
+		// Collect the key order after deserialization
+		actualKeys := make([]int, 0, m2.Len())
+		for key, _ := range m2.Iter() {
+			actualKeys = append(actualKeys, key)
+		}
+
+		// Verify the order is consistent
+		assert.Equal(t, keys, actualKeys, "Key order should be preserved after serialization and deserialization")
+	})
 }
