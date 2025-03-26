@@ -1,6 +1,7 @@
-// Copyright 2009 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// Copyright 2009 The Go Authors.
+// Copyright 2025, Daniel Hook.
+// Licensed under the BSD 3-Clause License.
+// See the LICENSE file for details.
 
 package list
 
@@ -348,12 +349,27 @@ func TestIterate(t *testing.T) {
 	l1.PushFront(3)
 	l1.PushFront(4)
 	l1.PushFront(5)
-	iterate, cancel := l1.Iterate()
-	defer cancel()
 
-	l1Emus := make([]int, 0, l1.len)
-	for item, ok := iterate(); ok; item, ok = iterate() {
+	l1Emus := make([]int, 0, l1.Len())
+	for item := range l1.Iter() {
 		l1Emus = append(l1Emus, item)
 	}
 	checkList(t, &l1, l1Emus)
+
+	// Test early return path
+	var l2 List[int]
+	l2.PushFront(1)
+	l2.PushFront(2)
+	l2.PushFront(3)
+
+	count := 0
+	for item := range l2.Iter() {
+		count++
+		if item == 2 {
+			break
+		}
+	}
+	if count != 2 {
+		t.Errorf("count = %d, want 2", count)
+	}
 }
