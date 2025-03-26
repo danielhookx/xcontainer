@@ -2,30 +2,34 @@
 
 ## Description
 
-Welcome to our project! This project provides some basic data structures implemented using golang.
+xcontainer is a comprehensive collection of fundamental data structures implemented in Go. This library provides efficient and type-safe implementations of various data structures using Go's generics feature. It serves as a reliable foundation for building complex data processing applications.
 
-## Install
-Use go get to install this package.
+## Features
 
-```
-go get github.com/danielhookx/xcontainer
-```
+- Generic-based implementation (requires Go 1.20 or higher)
+- Type-safe data structure operations
+- Clean and intuitive API design
+- Comprehensive unit test coverage
+- Non-thread-safe implementations (thread safety should be handled by the caller if needed)
 
-## Notice
-- Generics based implementation (requires Go 1.20 or higher)
-- All implementations are not threadsafe
+## Data Structures
 
-## Member list
+- **graph**: Graph data structure supporting directed and undirected graphs
+- **heap**: Heap implementation with support for max and min heaps
+- **list**: Linked list implementations including singly and doubly linked lists
+- **[ordered map](map/README.md)**: Ordered map implementation maintaining insertion order of key-value pairs
+- **queue**: Queue implementations including standard and priority queues
+- **set**: Set implementation with basic set operations
+- **stack**: Stack implementation with standard stack operations
+- **tree**: Tree implementations including binary trees and binary search trees
 
-- graph
-- heap
-- list
-- ordered map
-- queue
-- set
-- stack
-- tree
+## Requirements
 
-### License
+- Go 1.20 or higher
+- All implementations are non-thread-safe
+- Generic-based implementation for type safety
+- Review specific data structure documentation before use
+
+## License
 
 xcontainer is under the MIT license. See the [LICENSE](LICENSE) file for details.
