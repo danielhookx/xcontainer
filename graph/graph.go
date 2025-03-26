@@ -41,9 +41,7 @@ func UndirectedGraphBFS[T comparable](g *UndirectedGraph[T], start T) []T {
 	for q.Len() > 0 {
 		vertex := q.DeQueue()
 		l := g.adj[vertex]
-		iterate, cancel := l.Iterate()
-		defer cancel()
-		for item, ok := iterate(); ok; item, ok = iterate() {
+		for item := range l.Iter() {
 			if v, ok := visited[item]; v && ok {
 				continue
 			}
@@ -65,9 +63,7 @@ func UndirectedGraphDFS[T comparable](g *UndirectedGraph[T], start T) []T {
 	for s.Len() > 0 {
 		vertex := s.Pop()
 		l := g.adj[vertex]
-		iterate, cancel := l.Iterate()
-		defer cancel()
-		for item, ok := iterate(); ok; item, ok = iterate() {
+		for item := range l.Iter() {
 			if v, ok := visited[item]; v && ok {
 				continue
 			}

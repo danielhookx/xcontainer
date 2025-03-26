@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/danielhookx/xcontainer/set"
-
 	"github.com/stretchr/testify/assert"
 )
 
