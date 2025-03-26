@@ -6,7 +6,7 @@ xcontainer is a comprehensive collection of fundamental data structures implemen
 
 ## Features
 
-- Generic-based implementation (requires Go 1.20 or higher)
+- Generic-based implementation
 - Type-safe data structure operations
 - Clean and intuitive API design
 - Comprehensive unit test coverage
@@ -16,16 +16,16 @@ xcontainer is a comprehensive collection of fundamental data structures implemen
 
 - **graph**: Graph data structure supporting directed and undirected graphs
 - **heap**: Heap implementation with support for max and min heaps
-- **list**: Linked list implementations including singly and doubly linked lists
+- **[list](list/README.md)**: Linked list implementations including singly and doubly linked lists
 - **[ordered map](map/README.md)**: Ordered map implementation maintaining insertion order of key-value pairs
 - **queue**: Queue implementations including standard and priority queues
-- **set**: Set implementation with basic set operations
+- **[set](set/README.md)**: Set implementation with basic set operations
 - **stack**: Stack implementation with standard stack operations
 - **tree**: Tree implementations including binary trees and binary search trees
 
 ## Requirements
 
-- Go 1.20 or higher
+- Go 1.23 or higher
 - All implementations are non-thread-safe
 - Generic-based implementation for type safety
 - Review specific data structure documentation before use
