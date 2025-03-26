@@ -1100,30 +1100,6 @@ func TestOrderedMap_Iter(t *testing.T) {
 		assert.Equal(t, 2, count, "Iterator should allow early exit")
 	})
 
-	t.Run("Modify Map During Iteration", func(t *testing.T) {
-		m := NewOrderedMap[string, int]()
-		m.Set("one", 1)
-		m.Set("two", 2)
-		m.Set("three", 3)
-
-		count := 0
-		for k, _ := range m.Iter() {
-			count++
-			if k == "two" {
-				m.Set("four", 4) // Add new element during iteration
-			}
-		}
-
-		// In Go, if we add elements during map iteration, new elements won't appear in current iteration
-		assert.Equal(t, 3, count, "Iterator should only iterate over elements that existed at start")
-		assert.Equal(t, 4, m.Len(), "Map length should be updated")
-
-		// Verify new element was added
-		v, ok := m.Get("four")
-		assert.True(t, ok, "New element should be added")
-		assert.Equal(t, 4, v, "New element value should be correct")
-	})
-
 	t.Run("Different Types of Key-Value Pairs", func(t *testing.T) {
 		t.Run("string -> interface{}", func(t *testing.T) {
 			m := NewOrderedMap[string, any]()

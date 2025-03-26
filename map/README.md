@@ -138,4 +138,4 @@ func main() {
 1. This implementation is not thread-safe and requires external synchronization for concurrent access
 2. Key types must be comparable
 3. All keys are converted to strings during JSON serialization
-4. The iterator creates a snapshot to ensure data consistency during traversal
+4. The iterator directly uses the underlying linked list for iteration, which means modifications during iteration will be reflected in the current iteration

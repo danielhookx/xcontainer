@@ -94,18 +94,11 @@ func (m *OrderedMap[K, V]) ToArray() []V {
 }
 
 // Iter returns an iterator that yields key-value pairs in insertion order.
-// The iterator creates a snapshot of the map to ensure consistent iteration.
+// The iterator directly uses the underlying linked list for iteration.
 func (m *OrderedMap[K, V]) Iter() iter.Seq2[K, V] {
-	// Create a snapshot at the beginning of iteration
-	snapshot := make([]*MapNode[K, V], 0, m.Len())
-	for e := m.l.Front(); e != nil; e = e.Next() {
-		snapshot = append(snapshot, e.Value)
-	}
-
 	return func(yield func(K, V) bool) {
-		// Use the snapshot for iteration
-		for _, node := range snapshot {
-			if !yield(node.K, node.V) {
+		for e := m.l.Front(); e != nil; e = e.Next() {
+			if !yield(e.Value.K, e.Value.V) {
 				return
 			}
 		}
