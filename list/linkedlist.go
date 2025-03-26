@@ -1,9 +1,12 @@
+// Copyright 2009 The Go Authors.
+// Copyright 2025, Daniel Hook.
+// Licensed under the BSD 3-Clause License.
+// See the LICENSE file for details.
+
 package list
 
 import (
-	"sync/atomic"
-
-	"github.com/danielhookx/xcontainer"
+	"iter"
 )
 
 type Element[T any] struct {
@@ -66,31 +69,15 @@ func (l *List[T]) Back() *Element[T] {
 	return l.root.prev
 }
 
-// returns a function that returns one more value of S at each call, in some arbitrary order.
-func (l *List[T]) Iterate() (xcontainer.IterateHandler[T], xcontainer.CancelHandler) {
-	ch := make(chan T)
-	var isStoped atomic.Bool
-	stopCh := make(chan struct{})
-
-	go func() {
-		defer close(ch)
-		count := 0
-		for node := l.root.next; node != nil && count < l.len; node, count = node.next, count+1 {
-			select {
-			case <-stopCh:
+// Iter returns an iterator over the elements of the list.
+func (l *List[T]) Iter() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for e := l.Front(); e != nil; e = e.Next() {
+			if !yield(e.Value) {
 				return
-			case ch <- node.Value:
 			}
 		}
-	}()
-	return func() (T, bool) {
-			v, ok := <-ch
-			return v, ok
-		}, func() {
-			if isStoped.CompareAndSwap(false, true) {
-				close(stopCh)
-			}
-		}
+	}
 }
 
 // lazyInit lazily initializes a zero List[T] value.

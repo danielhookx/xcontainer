@@ -1,7 +1,8 @@
 package list
 
 import (
-	"github.com/danielhookx/xcontainer"
+	"iter"
+
 	"github.com/danielhookx/xcontainer/set"
 )
 
@@ -31,7 +32,6 @@ func (sl *SetList[T]) Add(val T) {
 // The complexity is O(1).
 func (sl *SetList[T]) Len() int { return sl.l.len }
 
-// returns a function that returns one more value of S at each call, in some arbitrary order.
-func (sl *SetList[T]) Iterate() (xcontainer.IterateHandler[T], xcontainer.CancelHandler) {
-	return sl.l.Iterate()
+func (sl *SetList[T]) Iter() iter.Seq[T] {
+	return sl.l.Iter()
 }
